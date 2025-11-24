@@ -46,7 +46,8 @@ with col1:
 
 with col2:
     st.subheader("Trajectories")
-    melted = prices.reset_index().melt(id_vars="Date", var_name="ticker", value_name="price")
+    prices_with_dates = prices.rename_axis("Date").reset_index()
+    melted = prices_with_dates.melt(id_vars="Date", var_name="ticker", value_name="price")
     top_tickers = summary["ticker"].tolist()
     filtered = melted[melted["ticker"].isin(top_tickers)]
     fig = px.line(

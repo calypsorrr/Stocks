@@ -46,7 +46,10 @@ with col1:
 
 with col2:
     st.subheader("Trajectories")
-    prices_with_dates = prices.rename_axis("Date").reset_index()
+    prices_with_dates = prices.reset_index()
+    if "Date" not in prices_with_dates.columns:
+        index_col = prices_with_dates.columns[0]
+        prices_with_dates = prices_with_dates.rename(columns={index_col: "Date"})
     melted = prices_with_dates.melt(id_vars="Date", var_name="ticker", value_name="price")
     top_tickers = summary["ticker"].tolist()
     filtered = melted[melted["ticker"].isin(top_tickers)]

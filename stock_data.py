@@ -88,6 +88,7 @@ def fetch_history(tickers: Iterable[str], days: int = 30) -> pd.DataFrame:
         closes = data
 
     closes = closes.dropna(axis=1, how="all").dropna()
+    closes.index.name = "Date"
     return closes.tail(days)
 
 

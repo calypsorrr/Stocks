@@ -1,11 +1,16 @@
 """Streamlit dashboard for ranking and visualizing top stocks."""
 from __future__ import annotations
 
+import logging
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from stock_data import DEFAULT_TICKERS, fetch_history, rank_top_performers
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Top Stocks Scout", layout="wide")
 st.title("📈 Top 10 Movers (Last Month)")
@@ -25,6 +30,10 @@ with st.sidebar:
     days = st.slider("Lookback window (days)", min_value=10, max_value=90, value=30)
     top_n = st.slider("How many to show?", min_value=5, max_value=25, value=10)
     tickers = [t.strip().upper() for t in selected.split(",") if t.strip()]
+    
+    if not tickers:
+        st.warning("⚠️ Please enter at least one ticker symbol.")
+        st.stop()
 
 @st.cache_data(show_spinner=False)
 def _load_data(tickers: list[str], days: int) -> pd.DataFrame:
@@ -33,9 +42,20 @@ def _load_data(tickers: list[str], days: int) -> pd.DataFrame:
 try:
     prices = _load_data(tickers, days)
     summary = rank_top_performers(tickers, days, top_n)
-    st.success(f"Retrieved {len(prices.columns)} tickers over {len(prices)} trading days.")
+    retrieved_count = len(prices.columns)
+    requested_count = len(tickers)
+    if retrieved_count < requested_count:
+        st.warning(
+            f"⚠️ Retrieved data for {retrieved_count} of {requested_count} tickers. "
+            "Some tickers may be invalid or unavailable."
+        )
+    st.success(f"✅ Retrieved {retrieved_count} tickers over {len(prices)} trading days.")
+except ValueError as exc:
+    st.error(f"❌ Invalid input: {exc}")
+    st.stop()
 except Exception as exc:  # noqa: BLE001 - surface the error to the user
-    st.error(f"Failed to load data: {exc}")
+    st.error(f"❌ Failed to load data: {exc}")
+    logger.exception("Error loading stock data")
     st.stop()
 
 col1, col2 = st.columns([1, 2])

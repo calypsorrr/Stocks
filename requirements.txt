@@ -1,6 +1,6 @@
-yfinance
-pandas
-streamlit
-plotly
-plyer
-tabulate
+yfinance>=0.2.0
+pandas>=2.0.0
+streamlit>=1.28.0
+plotly>=5.17.0
+plyer>=2.1.0
+tabulate>=0.9.0

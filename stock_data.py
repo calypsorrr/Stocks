@@ -125,6 +125,14 @@ def fetch_history(tickers: Iterable[str], days: int = 30) -> pd.DataFrame:
 
     closes = closes.dropna(axis=1, how="all").dropna()
     
+    # Handle MultiIndex columns - flatten them to simple column names
+    if isinstance(closes.columns, pd.MultiIndex):
+        # Flatten MultiIndex columns - take the last level (ticker name)
+        closes.columns = [col[-1] if isinstance(col, tuple) else str(col) for col in closes.columns]
+    else:
+        # Ensure all columns are strings
+        closes.columns = [str(col) for col in closes.columns]
+    
     # Log which tickers were successfully retrieved
     retrieved_tickers = list(closes.columns)
     if len(retrieved_tickers) < len(ticker_list):
